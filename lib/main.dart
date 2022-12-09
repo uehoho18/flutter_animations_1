@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:rive/rive.dart';
 
 void main() {
@@ -40,29 +42,48 @@ class _LoginFormState extends State<LoginForm> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  void _incrementCounter() {
-    setState(() {});
-  }
-
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
-    );
+  void initState() {
+    super.initState();
+    animationURL = defaultTargetPlatform == TargetPlatform.android ||
+            defaultTargetPlatform == TargetPlatform.iOS
+        ? 'assets/animations/login.riv'
+        : 'animations/login.riv';
+    rootBundle.load(animationURL).then((data) {
+      final file = RiveFile.import(data);
+      final Artboard = file.mainArtboard;
+      stateMachineController =
+          StateMachineController.fromArtboard(Artboard, "Login");
+      if (stateMachineController != null) {
+        Artboard.addController(stateMachineController!);
+
+        stateMachineController!.inputs.forEach((e) {
+          debugPrint(e.runtimeType.toString());
+          debugPrint("name${e.name}End");
+        });
+      }
+    });
   }
+}
+
+@override
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(),
+    body: Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          const Text(
+            'You have pushed the button this many times:',
+          ),
+        ],
+      ),
+    ),
+    floatingActionButton: FloatingActionButton(
+      onPressed: _incrementCounter,
+      tooltip: 'Increment',
+      child: const Icon(Icons.add),
+    ), // This trailing comma makes auto-formatting nicer for build methods.
+  );
 }
